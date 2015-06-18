@@ -1,0 +1,24 @@
+{
+  "name": "rere/yii2-core",
+  "description": "Core data for rapanel",
+  "type": "yii2-extension",
+  "keywords": [
+    "yii2",
+    "extension"
+  ],
+  "license": "LGPL-3.0+",
+  "authors": [
+    {
+      "name": "rere",
+      "email": "webmaster@rere-design.ru"
+    }
+  ],
+  "require": {
+    "yiisoft/yii2": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "rere\\core\\": ""
+    }
+  }
+}
