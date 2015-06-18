@@ -72,9 +72,6 @@ class Page extends \rere\core\defaultModels\Page
         });
 
         $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
-            if (!empty($event->sender->oldAttributes['created_at']) && $event->sender->created_at != $event->sender->oldAttributes['created_at'])
-                $event->sender->created_at = new \yii\db\Expression('FROM_UNIXTIME(:time)', ['time' => strtotime($event->sender->created_at)]);
-
             if (empty($event->sender->url) && $event->sender->name)
                 $event->sender->url = RA::purifyUrl(YandexTranslate::translate($event->sender->name, 'en'));
             elseif (!empty($event->sender->oldAttributes['url']) && $event->sender->url != $event->sender->oldAttributes['url'])
@@ -110,7 +107,7 @@ class Page extends \rere\core\defaultModels\Page
         return [
             [['name'], 'required'],
             [['sort_id', 'parent_id', 'module_id'], 'integer'],
-            [['with_child', 'status_id'], 'safe'],
+            [['with_child', 'status_id', 'created_at'], 'safe'],
             [['url', 'name', 'about'], 'string', 'max' => 255],
         ];
     }
