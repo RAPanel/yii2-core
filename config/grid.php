@@ -12,7 +12,7 @@ return [
             'type' => 'text',
             'tagOptions' => ['class' => 'medium-8 columns'],
         ],
-        'created' => [
+        'created_at' => [
             'type' => 'date',
             'tagOptions' => ['class' => 'medium-4 columns'],
         ],
@@ -21,8 +21,7 @@ return [
             'options' => ['rows' => 6],
         ],
         'with_child' => [
-            'type' => 'radioList',
-            'items' => [1 => 'будут дети', 0 => 'без детей'],
+            'type' => 'checkbox',
         ],
     ],
     'Data' => [

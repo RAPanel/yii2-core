@@ -72,8 +72,8 @@ class Page extends \rere\core\defaultModels\Page
         });
 
         $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
-            if (!empty($event->sender->oldAttributes['created']) && $event->sender->created != $event->sender->oldAttributes['created'])
-                $event->sender->created = new \yii\db\Expression('FROM_UNIXTIME(:time)', ['time' => strtotime($event->sender->created)]);
+            if (!empty($event->sender->oldAttributes['created_at']) && $event->sender->created_at != $event->sender->oldAttributes['created_at'])
+                $event->sender->created_at = new \yii\db\Expression('FROM_UNIXTIME(:time)', ['time' => strtotime($event->sender->created_at)]);
 
             if (empty($event->sender->url) && $event->sender->name)
                 $event->sender->url = RA::purifyUrl(YandexTranslate::translate($event->sender->name, 'en'));
