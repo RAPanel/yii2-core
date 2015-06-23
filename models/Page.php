@@ -2,21 +2,43 @@
 
 namespace rere\core\models;
 
-use app\components\YandexTranslate;
-use app\models\User;
-use rere\core\defaultModels\PageCounts;
-use rere\core\defaultModels\PageSessionData;
 use rere\core\RA;
-use rere\core\ReRe;
 use Yii;
+use yii\behaviors\AttributeBehavior;
+use yii\behaviors\BlameableBehavior;
+use yii\behaviors\SluggableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
+use yii\helpers\Inflector;
 use yii\helpers\Url;
 
+Inflector::$transliterator = 'Russian-Latin/BGN; NFKD';
+
 /**
- * @inheritdoc
+ * This is the model class for table "{{%page}}".
+ *
+ * @property string $id
+ * @property integer $status_id
+ * @property integer $with_child
+ * @property string $sort_id
+ * @property string $parent_id
+ * @property string $module_id
+ * @property integer $user_id
+ * @property string $url
+ * @property string $name
+ * @property string $about
+ * @property string $updated_at
+ * @property string $created_at
+ *
+ * @property Page $parent
+ * @property Page[] $pages
+ * @property User $user
+ * @property PageCharacters[] $characters
+ * @property PageComments[] $pageComments
+ * @property PageData $pageData
+ * @property Photo[] $photos
  */
-class Page extends \rere\core\defaultModels\Page
+class Page extends \yii\db\ActiveRecord
 {
     public $pagesCount;
 
@@ -28,21 +50,21 @@ class Page extends \rere\core\defaultModels\Page
     public function getHref($normalizeUrl = true, $scheme = false)
     {
         if (strpos($this->url, '/') !== false) return $this->url;
-        $module = ReRe::module($this->module_id);
+        $module = RA::module($this->module_id);
         $action = 'show';
         $additional = [];
         if ($module == 'category') {
             $action = 'index';
             $url = Page::find()->where(['id' => $this->parents])->andWhere('url!="/"')->orderBy('id')->select('url')->scalar();
             if ($url) $module = $url;
-        } elseif ($this->parent && $this->parent->module_id = ReRe::module('category')) {
+        } elseif ($this->parent && $this->parent->module_id = RA::module('category')) {
             if (strpos($this->parent->url, '/') !== false)
                 return str_replace('//', '/', $this->parent->url . '/' . $this->url);
             if ($module != $this->parent->url) $additional['category'] = $this->parent->url;
 
             $action = 'show';
         }
-        if (ReRe::module($this->url)) $url = ["/{$this->url}/index"];
+        if (RA::module($this->url)) $url = ["/{$this->url}/index"];
         else $url = ["/{$module}/{$action}", 'url' => $this->url] + $additional;
         return $normalizeUrl ? Url::to($url, $scheme) : $url;
     }
@@ -60,41 +82,32 @@ class Page extends \rere\core\defaultModels\Page
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->on(self::EVENT_BEFORE_INSERT, function ($event) {
-            if (empty($event->sender->user_id))
-                $event->sender->user_id = Yii::$app->user->id;
-
-            if (empty($event->sender->url) && $event->sender->name)
-                $event->sender->url = RA::purifyUrl(YandexTranslate::translate($event->sender->name, 'en'));
-        });
-
-        $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
-            if (empty($event->sender->url) && $event->sender->name)
-                $event->sender->url = RA::purifyUrl(YandexTranslate::translate($event->sender->name, 'en'));
-            elseif (!empty($event->sender->oldAttributes['url']) && $event->sender->url != $event->sender->oldAttributes['url'])
-                $event->sender->url = $event->sender->purify($event->sender->url);
-        });
-
-        $this->on(self::EVENT_AFTER_INSERT, function ($event) {
-            if (empty($event->sender->sort_id) && $event->sender->id) {
-                $event->sender->sort_id = $event->sender->id - $event->sender->parent_id;
-                $event->sender->update(false, ['sort_id']);
-            }
-        });
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function behaviors()
     {
         return [
             'timestamp' => [
                 'class' => TimestampBehavior::className(),
                 'value' => new Expression('NOW()'),
+            ],
+            'sluggable' => [
+                'class' => SluggableBehavior::className(),
+                'attribute' => 'name',
+                'slugAttribute' => 'url',
+                'immutable' => true,
+                'ensureUnique' => true,
+            ],
+            'blameable' => [
+                'class' => BlameableBehavior::className(),
+                'createdByAttribute' => 'user_id',
+                'updatedByAttribute' => false,
+            ],
+            'sortable' => [
+                'class' => AttributeBehavior::className(),
+                'attributes' => [self::EVENT_AFTER_INSERT => 'sort_id'],
+                'value' => function ($event) {
+                    $event->sender->sort_id = $event->sender->id - $event->sender->parent_id;
+                    $event->sender->update(false, ['sort_id']);
+                },
             ],
         ];
     }
@@ -106,14 +119,36 @@ class Page extends \rere\core\defaultModels\Page
     {
         return [
             [['name'], 'required'],
-            [['sort_id', 'parent_id', 'module_id'], 'integer'],
-            [['with_child', 'status_id', 'created_at'], 'safe'],
+            ['url', 'match', 'pattern' => '/^[a-zA-Z0-9-.\/]+$/'],
+            [['status_id', 'with_child', 'sort_id', 'parent_id', 'module_id'], 'integer'],
             [['url', 'name', 'about'], 'string', 'max' => 255],
+            [['created_at'], 'safe'],
         ];
     }
 
     /**
      * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => Yii::t('rere.model', 'ID'),
+            'status_id' => Yii::t('rere.model', 'Status ID'),
+            'with_child' => Yii::t('rere.model', 'With Child'),
+            'sort_id' => Yii::t('rere.model', 'Sort ID'),
+            'parent_id' => Yii::t('rere.model', 'Parent ID'),
+            'module_id' => Yii::t('rere.model', 'Module ID'),
+            'user_id' => Yii::t('rere.model', 'User ID'),
+            'url' => Yii::t('rere.model', 'Url'),
+            'name' => Yii::t('rere.model', 'Name'),
+            'about' => Yii::t('rere.model', 'About'),
+            'updated_at' => Yii::t('rere.model', 'Updated At'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
      */
     public function getParent()
     {
@@ -121,11 +156,29 @@ class Page extends \rere\core\defaultModels\Page
     }
 
     /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPages()
+    {
+        return $this->hasMany(Page::className(), ['parent_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getUser()
+    {
+        return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getPhotos()
     {
-        return $this->hasMany(Photo::className(), ['page_id' => 'id']);
+        // @todo Доделать подключение через бехавиор
+        return $this->hasMany(Photo::className(), ['owner_id' => 'id'])/*->andOnCondition(['model'=>0])*/
+            ;
     }
 
     /**
@@ -157,7 +210,8 @@ class Page extends \rere\core\defaultModels\Page
      */
     public function getPhoto()
     {
-        return $this->hasOne(Photo::className(), ['page_id' => 'id'])->where([Photo::tableName() . '.type' => 'main']);
+        return $this->hasOne(Photo::className(), ['owner_id' => 'id'])/*->andOnCondition([Photo::tableName() . '.type' => 'main'])*/
+            ;
     }
 
     /**
@@ -190,13 +244,5 @@ class Page extends \rere\core\defaultModels\Page
     public function getCommentsCount()
     {
         return $this->hasMany(PageComments::className(), ['page_id' => 'id'])->count();
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 }

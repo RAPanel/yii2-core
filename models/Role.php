@@ -9,7 +9,7 @@
 namespace rere\core\models;
 
 
-class Role extends \amnah\yii2\user\models\Role
+class Role extends \rere\user\models\Role
 {
     public static function tableName()
     {

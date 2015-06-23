@@ -7,11 +7,14 @@ use Yii;
 /**
  * This is the model class for table "{{%page_characters}}".
  *
+ * @property string $id
  * @property string $page_id
- * @property string $name
+ * @property string $character_id
  * @property string $value
  *
  * @property Page $page
+ * @property PageCharacters $character
+ * @property PageCharacters[] $pageCharacters
  */
 class PageCharacters extends \yii\db\ActiveRecord
 {
@@ -29,11 +32,10 @@ class PageCharacters extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['page_id', 'name'], 'required'],
-            [['page_id', 'name', 'value'], 'safe'],
-            [['page_id'], 'integer'],
+            [['page_id', 'character_id', 'value'], 'required'],
+            [['page_id', 'character_id'], 'integer'],
             [['value'], 'string'],
-            [['name'], 'string', 'max' => 32]
+            [['page_id', 'character_id'], 'unique', 'targetAttribute' => ['page_id', 'character_id'], 'message' => 'The combination of Page ID and Character ID has already been taken.']
         ];
     }
 
@@ -43,9 +45,10 @@ class PageCharacters extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'page_id' => Yii::t('rere', 'Page ID'),
-            'name' => Yii::t('rere', 'Name'),
-            'value' => Yii::t('rere', 'Value'),
+            'id' => Yii::t('rere.model', 'ID'),
+            'page_id' => Yii::t('rere.model', 'Page ID'),
+            'character_id' => Yii::t('rere.model', 'Character ID'),
+            'value' => Yii::t('rere.model', 'Value'),
         ];
     }
 
@@ -55,5 +58,21 @@ class PageCharacters extends \yii\db\ActiveRecord
     public function getPage()
     {
         return $this->hasOne(Page::className(), ['id' => 'page_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCharacter()
+    {
+        return $this->hasOne(PageCharacters::className(), ['id' => 'character_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPageCharacters()
+    {
+        return $this->hasMany(PageCharacters::className(), ['character_id' => 'id']);
     }
 }

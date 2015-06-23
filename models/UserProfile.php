@@ -9,8 +9,8 @@ use Yii;
  *
  * @property integer $id
  * @property integer $user_id
- * @property string $create_time
- * @property string $update_time
+ * @property string $updated_at
+ * @property string $created_at
  * @property string $full_name
  * @property string $city
  * @property string $vk
@@ -39,7 +39,7 @@ class UserProfile extends \yii\db\ActiveRecord
         return [
             [['user_id'], 'required'],
             [['user_id'], 'integer'],
-            [['create_time', 'update_time'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
             [['full_name'], 'string', 'max' => 255],
             [['city', 'vk', 'fb', 'ig', 'tw', 'options'], 'string', 'max' => 64]
         ];
@@ -53,8 +53,8 @@ class UserProfile extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('rere.model', 'ID'),
             'user_id' => Yii::t('rere.model', 'User ID'),
-            'create_time' => Yii::t('rere.model', 'Create Time'),
-            'update_time' => Yii::t('rere.model', 'Update Time'),
+            'updated_at' => Yii::t('rere.model', 'Updated At'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
             'full_name' => Yii::t('rere.model', 'Full Name'),
             'city' => Yii::t('rere.model', 'City'),
             'vk' => Yii::t('rere.model', 'Vk'),

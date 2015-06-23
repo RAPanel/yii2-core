@@ -9,8 +9,8 @@ use Yii;
  *
  * @property integer $id
  * @property string $name
- * @property string $create_time
- * @property string $update_time
+ * @property string $updated_at
+ * @property string $created_at
  * @property integer $can_admin
  *
  * @property User[] $users
@@ -32,7 +32,7 @@ class UserRole extends \yii\db\ActiveRecord
     {
         return [
             [['name'], 'required'],
-            [['create_time', 'update_time'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
             [['can_admin'], 'integer'],
             [['name'], 'string', 'max' => 255]
         ];
@@ -46,8 +46,8 @@ class UserRole extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('rere.model', 'ID'),
             'name' => Yii::t('rere.model', 'Name'),
-            'create_time' => Yii::t('rere.model', 'Create Time'),
-            'update_time' => Yii::t('rere.model', 'Update Time'),
+            'updated_at' => Yii::t('rere.model', 'Updated At'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
             'can_admin' => Yii::t('rere.model', 'Can Admin'),
         ];
     }

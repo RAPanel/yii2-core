@@ -2,7 +2,6 @@
 
 namespace rere\core\models;
 
-use rere\core\defaultModels\User;
 use Yii;
 use yii\base\Exception;
 use yii\helpers\FileHelper;
@@ -22,8 +21,8 @@ use yii\helpers\Url;
  * @property string $about
  * @property string $cropParams
  * @property string $hash
- * @property string $lastmod
- * @property string $created
+ * @property string $updated_at
+ * @property string $created_at
  *
  * @property Page $page
  * @property User $user
@@ -60,12 +59,10 @@ class Photo extends \yii\db\ActiveRecord
         return [
             [['name'], 'required'],
             [['sort_id', 'page_id', 'user_id', 'width', 'height'], 'integer'],
-            [['lastmod', 'created'], 'safe'],
-            [['type'], 'string', 'max' => 16],
-            [['name'], 'string', 'max' => 64],
-            [['about', 'cropParams'], 'string', 'max' => 255],
-            [['hash'], 'string', 'max' => 32],
-            [['about'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
+            [['type'], 'string', 'max' => 8],
+            [['name', 'about', 'cropParams'], 'string', 'max' => 255],
+            [['hash'], 'string', 'max' => 32]
         ];
     }
 
@@ -75,19 +72,19 @@ class Photo extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('rere', 'ID'),
-            'sort_id' => Yii::t('rere', 'Sort ID'),
-            'page_id' => Yii::t('rere', 'Page ID'),
-            'user_id' => Yii::t('rere', 'User ID'),
-            'type' => Yii::t('rere', 'Type'),
-            'name' => Yii::t('rere', 'Name'),
-            'width' => Yii::t('rere', 'Width'),
-            'height' => Yii::t('rere', 'Height'),
-            'about' => Yii::t('rere', 'About'),
-            'cropParams' => Yii::t('rere', 'Crop Params'),
-            'hash' => Yii::t('rere', 'Hash'),
-            'lastmod' => Yii::t('rere', 'Lastmod'),
-            'created' => Yii::t('rere', 'Created'),
+            'id' => Yii::t('rere.model', 'ID'),
+            'sort_id' => Yii::t('rere.model', 'Sort ID'),
+            'page_id' => Yii::t('rere.model', 'Page ID'),
+            'user_id' => Yii::t('rere.model', 'User ID'),
+            'type' => Yii::t('rere.model', 'Type'),
+            'name' => Yii::t('rere.model', 'Name'),
+            'width' => Yii::t('rere.model', 'Width'),
+            'height' => Yii::t('rere.model', 'Height'),
+            'about' => Yii::t('rere.model', 'About'),
+            'cropParams' => Yii::t('rere.model', 'Crop Params'),
+            'hash' => Yii::t('rere.model', 'Hash'),
+            'updated_at' => Yii::t('rere.model', 'Updated At'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
         ];
     }
 

@@ -2,7 +2,6 @@
 
 namespace rere\core\models;
 
-use rere\core\defaultModels\Replaces;
 use Yii;
 
 /**

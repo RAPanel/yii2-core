@@ -13,8 +13,9 @@ use Yii;
  * @property string $page_id
  * @property integer $user_id
  * @property string $parent_id
+ * @property integer $rating
  * @property string $text
- * @property string $created
+ * @property string $created_at
  *
  * @property Page $page
  * @property User $user
@@ -37,10 +38,10 @@ class PageComments extends \yii\db\ActiveRecord
         return [
             [['user_id'], 'default', 'value' => Yii::$app->user->id],
             [['parent_id'], 'default', 'value' => 0],
-            [['page_id', 'user_id', 'parent_id'], 'required'],
-            [['page_id', 'user_id', 'parent_id'], 'integer'],
+            [['page_id', 'user_id', 'parent_id', 'rating', 'text'], 'required'],
+            [['page_id', 'user_id', 'parent_id', 'rating'], 'integer'],
             [['text'], 'string'],
-            [['created'], 'safe']
+            [['created_at'], 'safe']
         ];
     }
 
@@ -50,12 +51,13 @@ class PageComments extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'page_id' => 'Page ID',
-            'user_id' => 'User ID',
-            'parent_id' => 'Parent ID',
-            'text' => 'Text',
-            'created' => 'Created',
+            'id' => Yii::t('rere.model', 'ID'),
+            'page_id' => Yii::t('rere.model', 'Page ID'),
+            'user_id' => Yii::t('rere.model', 'User ID'),
+            'parent_id' => Yii::t('rere.model', 'Parent ID'),
+            'rating' => Yii::t('rere.model', 'Rating'),
+            'text' => Yii::t('rere.model', 'Text'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
         ];
     }
 

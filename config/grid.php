@@ -20,9 +20,6 @@ return [
             'type' => 'textArea',
             'options' => ['rows' => 6],
         ],
-        'with_child' => [
-            'type' => 'checkbox',
-        ],
     ],
     'Data' => [
         'data.content' => [
@@ -50,6 +47,18 @@ return [
             'options' => ['rows' => 2],
         ],
     ],
+    'Position' => [
+        'with_child' => [
+            'type' => 'checkbox',
+        ],
+        'parent_id' => [
+            'type' => 'select',
+            'items' => [null => Yii::t('rere.help', 'Select parent')] + \yii\helpers\ArrayHelper::map(\rere\core\models\Page::findAll(['with_child' => 1]), 'id', 'name'),
+        ],
+        'sort_id' => [
+            'type' => 'number',
+        ],
+    ]
     /*'Character' => [
         'characters' => [
             'type' => 'widget',

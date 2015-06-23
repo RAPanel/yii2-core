@@ -19,13 +19,13 @@ class RA
         return is_numeric($q) || isset($base[$q]) ? $base[$q] : array_search($q, $base);
     }
 
-    public static function purifyUrl($url)
+    public static function purifyUrl($url, $allowSlash = false)
     {
         $url = Html::decode(mb_strtolower(trim($url)));
-        $url = str_replace("//", "/", $url);
-        $url = preg_replace("#[\s\,\/]+#", "-", $url);
-        $url = preg_replace('#[^0-9a-z-]#', '', $url);
-        return $url;
+//        $url = str_replace("//", "/", $url);
+        $url = preg_replace('#[\s\,' . ($allowSlash ? '' : '\/') . ']+#', "-", $url);
+        $url = preg_replace('#[^0-9a-z-' . ($allowSlash ? '\/' : '') . ']#', '', $url);
+        return trim($url, '-');
     }
 
 }

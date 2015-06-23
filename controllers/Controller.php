@@ -11,9 +11,23 @@ namespace rere\core\controllers;
 
 use rere\core\models\Page;
 use Yii;
+use yii\web\HttpException;
 
 class Controller extends \yii\web\Controller
 {
+    public function actionIndex($url = null)
+    {
+        $base = $this->page($url ? compact('url') : ['url' => $this->id]);
+        $this->render($this->action->id, compact('base'));
+    }
+
+    public function page($condition)
+    {
+        $page = Page::find()->where($condition)->one();
+        if (!$condition) throw new HttpException(404, Yii::t('rere.error', 'Can`t find page'));
+        return $page;
+    }
+
     public function render($view, $params = [])
     {
         /** @var $base Page */
@@ -25,6 +39,12 @@ class Controller extends \yii\web\Controller
             }
         }
         return parent::render($view, $params);
+    }
+
+    public function actionShow($url)
+    {
+        $base = $this->page(compact('url'));
+        $this->render($this->action->id, compact('base'));
     }
 
 }

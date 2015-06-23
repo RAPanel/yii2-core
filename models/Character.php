@@ -7,6 +7,7 @@ use Yii;
 /**
  * This is the model class for table "{{%character}}".
  *
+ * @property integer $id
  * @property string $url
  * @property string $type
  */
@@ -26,7 +27,8 @@ class Character extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['url', 'type'], 'required'],
+            [['id', 'url', 'type'], 'required'],
+            [['id'], 'integer'],
             [['url'], 'string', 'max' => 32],
             [['type'], 'string', 'max' => 16]
         ];
@@ -38,6 +40,7 @@ class Character extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
+            'id' => Yii::t('rere.model', 'ID'),
             'url' => Yii::t('rere.model', 'Url'),
             'type' => Yii::t('rere.model', 'Type'),
         ];

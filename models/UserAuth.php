@@ -12,8 +12,8 @@ use Yii;
  * @property string $provider
  * @property string $provider_id
  * @property string $provider_attributes
- * @property string $create_time
- * @property string $update_time
+ * @property string $updated_at
+ * @property string $created_at
  *
  * @property User $user
  */
@@ -36,7 +36,7 @@ class UserAuth extends \yii\db\ActiveRecord
             [['user_id', 'provider', 'provider_id', 'provider_attributes'], 'required'],
             [['user_id'], 'integer'],
             [['provider_attributes'], 'string'],
-            [['create_time', 'update_time'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
             [['provider', 'provider_id'], 'string', 'max' => 255]
         ];
     }
@@ -52,8 +52,8 @@ class UserAuth extends \yii\db\ActiveRecord
             'provider' => Yii::t('rere.model', 'Provider'),
             'provider_id' => Yii::t('rere.model', 'Provider ID'),
             'provider_attributes' => Yii::t('rere.model', 'Provider Attributes'),
-            'create_time' => Yii::t('rere.model', 'Create Time'),
-            'update_time' => Yii::t('rere.model', 'Update Time'),
+            'updated_at' => Yii::t('rere.model', 'Updated At'),
+            'created_at' => Yii::t('rere.model', 'Created At'),
         ];
     }
 
