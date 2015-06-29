@@ -26,10 +26,9 @@ class Menu extends \yii\widgets\Menu
                     'items' => $this->levels && $row->with_child && isset($this->items[$row->id]) ? $this->items[$row->id] : null,
                 ];
 
-            if ($this->levels && $this->items[min(array_keys($this->items))])
+            if ($this->items[min(array_keys($this->items))])
                 $this->items = $this->items[min(array_keys($this->items))];
         }
-//        var_dump($this->items);die;
 
         parent::run();
     }
