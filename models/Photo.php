@@ -12,8 +12,8 @@ use yii\helpers\Url;
  *
  * @property string $id
  * @property string $sort_id
- * @property string $page_id
- * @property integer $user_id
+ * @property integer $owner_id
+ * @property string $model
  * @property string $type
  * @property string $name
  * @property string $width
@@ -58,9 +58,9 @@ class Photo extends \yii\db\ActiveRecord
     {
         return [
             [['name'], 'required'],
-            [['sort_id', 'page_id', 'user_id', 'width', 'height'], 'integer'],
+            [['sort_id', 'owner_id', 'width', 'height'], 'integer'],
             [['updated_at', 'created_at'], 'safe'],
-            [['type'], 'string', 'max' => 8],
+            [['type', 'model'], 'string', 'max' => 8],
             [['name', 'about', 'cropParams'], 'string', 'max' => 255],
             [['hash'], 'string', 'max' => 32]
         ];
@@ -74,8 +74,7 @@ class Photo extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('rere.model', 'ID'),
             'sort_id' => Yii::t('rere.model', 'Sort ID'),
-            'page_id' => Yii::t('rere.model', 'Page ID'),
-            'user_id' => Yii::t('rere.model', 'User ID'),
+            'owner_id' => Yii::t('rere.model', 'Owner ID'),
             'type' => Yii::t('rere.model', 'Type'),
             'name' => Yii::t('rere.model', 'Name'),
             'width' => Yii::t('rere.model', 'Width'),
@@ -96,14 +95,6 @@ class Photo extends \yii\db\ActiveRecord
         return $this->hasOne(Page::className(), ['id' => 'page_id']);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getUser()
-    {
-        return $this->hasOne(User::className(), ['id' => 'user_id']);
-    }
-
     public function beforeSave($insert)
     {
         if ($insert && ($file = $this->getFile(true))) {
@@ -111,8 +102,6 @@ class Photo extends \yii\db\ActiveRecord
                 list($this->width, $this->height) = getimagesize($file);
                 $this->hash = md5_file($file);
             } else throw new Exception('File not found in tmp dir ' . $file);
-            if (isset(Yii::$app->user) && Yii::$app->user->id)
-                $this->user_id = Yii::$app->user->id;
         }
 
         return parent::beforeSave($insert);
