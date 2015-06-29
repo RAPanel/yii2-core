@@ -34,18 +34,13 @@ Inflector::$transliterator = 'Russian-Latin/BGN; NFKD';
  * @property Page[] $pages
  * @property User $user
  * @property PageCharacters[] $characters
- * @property PageComments[] $pageComments
- * @property PageData $pageData
+ * @property PageComments[] $comments
+ * @property PageData $data
  * @property Photo[] $photos
  */
 class Page extends \yii\db\ActiveRecord
 {
     public $pagesCount;
-
-    public function getActive()
-    {
-        return $this->getHref() == \Yii::$app->request->pathInfo;
-    }
 
     public function getHref($normalizeUrl = true, $scheme = false)
     {
@@ -69,14 +64,14 @@ class Page extends \yii\db\ActiveRecord
         return $normalizeUrl ? Url::to($url, $scheme) : $url;
     }
 
-    public function getLabel()
-    {
-        return $this->name;
-    }
-
     public function getDate($name = 'create_at')
     {
         return Yii::$app->formatter->asDatetime($this->{$name}, isset(Yii::$app->params['dateFormat']) ? Yii::$app->params['dateFormat'] : null);
+    }
+
+    public function getContent()
+    {
+        return $this->data->content;
     }
 
     /**
@@ -110,6 +105,14 @@ class Page extends \yii\db\ActiveRecord
                 },
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return '{{%page}}';
     }
 
     /**

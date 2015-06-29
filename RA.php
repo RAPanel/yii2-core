@@ -16,7 +16,7 @@ class RA
     public static function module($q)
     {
         $base = Yii::$app->params['modules'];
-        return is_numeric($q) || isset($base[$q]) ? $base[$q] : array_search($q, $base);
+        return is_numeric($q) && isset($base[$q]) ? $base[$q] : array_search($q, $base);
     }
 
     public static function purifyUrl($url, $allowSlash = false)

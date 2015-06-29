@@ -9,7 +9,7 @@
 namespace rere\core\components;
 
 
-use rere\core\defaultModels\Settings;
+use rere\core\models\Settings;
 use Yii;
 use yii\base\BootstrapInterface;
 use yii\base\Component;

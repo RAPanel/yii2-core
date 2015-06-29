@@ -17,7 +17,6 @@ class FoundationAsset extends AssetBundle
 
     public $depends = [
         '\yii\web\JqueryAsset',
-        'rere\core\widgets\FastClickAsset',
         'rere\core\widgets\ModernizrAsset',
     ];
 

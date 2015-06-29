@@ -19,7 +19,7 @@ class ActiveForm extends \yii\widgets\ActiveForm
      * @param $model \yii\base\Model
      * @param $attribute
      * @param $options
-     * @return static the field object itself
+     * @return ActiveField the created ActiveField object
      */
     public function input($type, $model, $attribute, $options = [])
     {
@@ -35,7 +35,7 @@ class ActiveForm extends \yii\widgets\ActiveForm
      * @param ActiveRecord $model
      * @param string $attribute
      * @param array $options
-     * @return ActiveField
+     * @return ActiveField the created ActiveField object
      */
     public function select($items, $model, $attribute, $options = [])
     {
@@ -51,7 +51,7 @@ class ActiveForm extends \yii\widgets\ActiveForm
      * @param $model \yii\base\Model
      * @param $attribute
      * @param $options
-     * @return static the field object itself
+     * @return ActiveField the created ActiveField object
      */
     public function textArea($size, $model, $attribute, $options = [])
     {
