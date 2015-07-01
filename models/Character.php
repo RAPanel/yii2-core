@@ -3,6 +3,8 @@
 namespace rere\core\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 
 /**
  * This is the model class for table "{{%character}}".
@@ -27,8 +29,7 @@ class Character extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'url', 'type'], 'required'],
-            [['id'], 'integer'],
+            [['url', 'type'], 'required'],
             [['url'], 'string', 'max' => 32],
             [['type'], 'string', 'max' => 16]
         ];
@@ -44,5 +45,22 @@ class Character extends \yii\db\ActiveRecord
             'url' => Yii::t('rere.model', 'Url'),
             'type' => Yii::t('rere.model', 'Type'),
         ];
+    }
+
+
+
+    public static function all()
+    {
+        return self::find()->all();
+    }
+
+    public static function typeMap()
+    {
+        return ArrayHelper::map(self::all(), 'url', 'type');
+    }
+
+    public function field($value = null, $options = [])
+    {
+        return Html::hiddenInput('PageCharacters[' . $this->id . '][name]', $this->url, $options) . Html::input($this->type, 'PageCharacters[' . $this->id . '][value]', $value, $options);
     }
 }

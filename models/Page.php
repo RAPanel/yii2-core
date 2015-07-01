@@ -213,8 +213,7 @@ class Page extends \yii\db\ActiveRecord
      */
     public function getPhoto()
     {
-        return $this->hasOne(Photo::className(), ['owner_id' => 'id'])/*->andOnCondition([Photo::tableName() . '.type' => 'main'])*/
-            ;
+        return $this->hasOne(Photo::className(), ['owner_id' => 'id'])->andOnCondition([Photo::tableName() . '.type' => 'main']);
     }
 
     /**

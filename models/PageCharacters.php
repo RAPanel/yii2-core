@@ -65,7 +65,7 @@ class PageCharacters extends \yii\db\ActiveRecord
      */
     public function getCharacter()
     {
-        return $this->hasOne(PageCharacters::className(), ['id' => 'character_id']);
+        return $this->hasOne(Character::className(), ['id' => 'character_id']);
     }
 
     /**
@@ -73,6 +73,11 @@ class PageCharacters extends \yii\db\ActiveRecord
      */
     public function getPageCharacters()
     {
-        return $this->hasMany(PageCharacters::className(), ['character_id' => 'id']);
+        return $this->hasMany(Character::className(), ['character_id' => 'id']);
+    }
+
+    public function getName()
+    {
+        return Yii::t('ra.character', $this->character->url);
     }
 }
