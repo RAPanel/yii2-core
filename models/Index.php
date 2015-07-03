@@ -3,6 +3,7 @@
 namespace rere\core\models;
 
 use Yii;
+use yii\web\HttpException;
 
 /**
  * This is the model class for table "{{%index}}".
@@ -30,9 +31,10 @@ class Index extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['extend_id', 'base', 'type', 'data_id'], 'required'],
-            [['extend_id', 'data_id'], 'integer'],
-            [['base', 'type'], 'string', 'max' => 16]
+            [['owner_id', 'model', 'type', 'data_id'], 'required'],
+            [['owner_id', 'data_id'], 'integer'],
+            [['model', 'type'], 'string', 'max' => 16],
+            [['data'], 'string', 'max' => 64],
         ];
     }
 
@@ -55,5 +57,28 @@ class Index extends \yii\db\ActiveRecord
     public function getData()
     {
         return $this->hasOne(IndexData::className(), ['id' => 'data_id']);
+    }
+
+    public function setData($value)
+    {
+        $model = IndexData::findOne(['value'=>$value]);
+        if(!$model){
+            $model = new IndexData();
+            $model->value = $value;
+            if(!$model->save())
+                throw new HttpException(400, $model->errors);
+        }
+        $this->data_id = $model->id;
+    }
+
+    public static function add($data)
+    {
+        $list = (array)$data['data'];
+        foreach($list as $row){
+            $data['data'] = $row;
+            $model = new Index();
+            $model->setAttributes($data);
+            $model->save(false);
+        }
     }
 }

@@ -3,6 +3,8 @@
 namespace rere\core\models;
 
 use Yii;
+use yii\behaviors\AttributeBehavior;
+use yii\helpers\VarDumper;
 
 /**
  * This is the model class for table "{{%page_data}}".
@@ -24,6 +26,36 @@ class PageData extends \yii\db\ActiveRecord
     public static function tableName()
     {
         return '{{%page_data}}';
+    }
+
+    public function init()
+    {
+        $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
+            if (empty($event->sender->title) && $event->sender->page->name)
+                $event->sender->title = $event->sender->page->name;
+        });
+        $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
+            if($event->sender->isAttributeChanged('tags')) {
+                $tags = array_map('trim', explode(',', $event->sender->getAttribute('tags')));
+                $oldTags = array_map('trim', explode(',', $event->sender->getOldAttribute('tags')));
+
+                $addTags = array_diff($tags, $oldTags, ['']);
+                $deleteTags = array_diff($oldTags, $tags, ['']);
+
+                $properties = ['type'=>'tags', 'owner_id'=>$event->sender->page_id, 'model'=>'Page'];
+
+                if(!empty($addTags)) Index::add(['data'=>$addTags] + $properties);
+
+                if(!empty($deleteTags)){
+                    $delete = [];
+                    foreach($event->sender->indexes as $row){
+                        if(in_array($row->data->value, $deleteTags)) $delete[] = $row->data->value;
+                    }
+                    Index::deleteAll(['data_id'=>$delete] + $properties);
+                }
+            }
+        });
+        parent::init();
     }
 
     /**
@@ -63,18 +95,12 @@ class PageData extends \yii\db\ActiveRecord
         return $this->hasOne(Page::className(), ['id' => 'page_id']);
     }
 
-    public function beforeSave($insert)
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getIndexes()
     {
-        if (empty($this->title) && $this->page->name)
-            $this->title = $this->page->name;
-
-        return parent::beforeSave($insert);
-    }
-
-    public function afterFind()
-    {
-        if (strpos($this->content, '<iframe'))
-            $this->content = preg_replace('%(<iframe.+)(<\\/iframe>|\\/>)%', '<div class="flex-video">$1$2</div>', $this->content);
+        return $this->hasMany(Index::className(), ['owner_id' => 'page_id'])->andOnCondition([Index::tableName() . '.model'=>'Page'])->with('data');
     }
 
     public function getContent()
@@ -98,6 +124,10 @@ class PageData extends \yii\db\ActiveRecord
                 $content = str_replace($search, $replace, $content);
             }
         }
+
+        if (strpos($content, '<iframe'))
+            $content = preg_replace('%(<iframe.+)(<\\/iframe>|\\/>)%', '<div class="flex-video">$1$2</div>', $content);
+
         return $content;
     }
 }
