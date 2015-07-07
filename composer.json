@@ -15,12 +15,8 @@
   ],
   "require": {
     "yiisoft/yii2": "*",
-    "bower-asset/foundation": "*",
-    "bower-asset/slick-carousel": "*",
-    "bower-asset/jquery-tags-input": "*",
-    "bower-asset/jquery.maskedinput": "*",
     "bower-asset/multifile": "*",
-    "bower-asset/dropzone": "*"
+    "bower-asset/slick-carousel": "*"
   },
   "autoload": {
     "psr-4": {
