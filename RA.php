@@ -14,10 +14,10 @@ use yii\helpers\Html;
  */
 class RA
 {
-    public static function module($q)
+    public static function module($q = null)
     {
         $base = Module::all();
-        return is_numeric($q) && isset($base[$q]) ? $base[$q] : array_search($q, $base);
+        return is_null($q) ? $base : (is_numeric($q) && isset($base[$q]) ? $base[$q] : array_search($q, $base));
     }
 
     public static function purifyUrl($url, $allowSlash = false)

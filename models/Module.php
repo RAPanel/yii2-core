@@ -98,6 +98,6 @@ class Module extends \yii\db\ActiveRecord
 
     public static function all()
     {
-        return ArrayHelper::map(self::find()->all(), 'id', 'name');
+        return ArrayHelper::map(self::find()->all(), 'id', 'url');
     }
 }
