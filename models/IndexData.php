@@ -29,7 +29,8 @@ class IndexData extends \yii\db\ActiveRecord
     {
         return [
             [['value'], 'required'],
-            [['value'], 'string', 'max' => 64]
+            [['value'], 'string', 'max' => 64],
+            [['value'], 'unique']
         ];
     }
 

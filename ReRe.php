@@ -2,6 +2,7 @@
 
 namespace rere\core;
 
+use rere\core\models\Module;
 use Yii;
 
 /**
@@ -14,7 +15,7 @@ class ReRe
 {
     public static function module($q)
     {
-        $base = Yii::$app->params['modules'];
+        $base = Module::all();
         return is_numeric($q) || isset($base[$q]) ? $base[$q] : array_search($q, $base);
     }
 
