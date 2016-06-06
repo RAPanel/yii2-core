@@ -1,16 +1,19 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
-use yii\helpers\ArrayHelper;
+use yii\base\Exception;
 
 /**
  * This is the model class for table "{{%module_settings}}".
  *
  * @property string $module_id
+ * @property string $sort
  * @property string $url
  * @property string $value
+ *
+ * @property Module $module
  */
 class ModuleSettings extends \yii\db\ActiveRecord
 {
@@ -28,7 +31,8 @@ class ModuleSettings extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['url', 'value'], 'required'],
+            [['module_id', 'url', 'value'], 'required'],
+            [['module_id', 'sort'], 'integer'],
             [['url'], 'string', 'max' => 16],
             [['value'], 'string', 'max' => 256]
         ];
@@ -40,14 +44,40 @@ class ModuleSettings extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'module_id' => Yii::t('rere.model', 'Module ID'),
-            'url' => Yii::t('rere.model', 'Url'),
-            'value' => Yii::t('rere.model', 'Value'),
+            'module_id' => Yii::t('ra', 'Module ID'),
+            'sort' => Yii::t('ra', 'Sort'),
+            'url' => Yii::t('ra', 'Url'),
+            'value' => Yii::t('ra', 'Value'),
         ];
     }
 
-    public static function get($id)
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getModule()
     {
-        return ArrayHelper::map(self::findAll($id), 'url', 'value');
+        return $this->hasOne(Module::className(), ['id' => 'module_id']);
+    }
+
+    public function init()
+    {
+        parent::init();
+        $serialize = function ($event) {
+            if (is_array($event->sender->value) || is_object($event->sender->value)) {
+                $event->sender->value = serialize($event->sender->value);
+            }
+        };
+        $this->on($this::EVENT_AFTER_VALIDATE, $serialize);
+        $this->on($this::EVENT_BEFORE_INSERT, $serialize);
+        $this->on($this::EVENT_BEFORE_UPDATE, $serialize);
+        $this->on($this::EVENT_AFTER_FIND, function ($event) {
+            if ($event->sender->value) {
+                try {
+                    $value = @unserialize($event->sender->value);
+                    if ($value) $event->sender->value = $value;
+                } catch (Exception $e) {
+                }
+            }
+        });
     }
 }

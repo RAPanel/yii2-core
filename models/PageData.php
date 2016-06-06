@@ -1,15 +1,16 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
-use yii\behaviors\AttributeBehavior;
-use yii\helpers\VarDumper;
+use yii\db\Exception;
+use yii\db\Transaction;
 
 /**
  * This is the model class for table "{{%page_data}}".
  *
  * @property string $page_id
+ * @property string $header
  * @property string $title
  * @property string $description
  * @property string $keywords
@@ -28,36 +29,6 @@ class PageData extends \yii\db\ActiveRecord
         return '{{%page_data}}';
     }
 
-    public function init()
-    {
-        $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
-            if (empty($event->sender->title) && $event->sender->page->name)
-                $event->sender->title = $event->sender->page->name;
-        });
-        $this->on(self::EVENT_BEFORE_UPDATE, function ($event) {
-            if($event->sender->isAttributeChanged('tags')) {
-                $tags = array_map('trim', explode(',', $event->sender->getAttribute('tags')));
-                $oldTags = array_map('trim', explode(',', $event->sender->getOldAttribute('tags')));
-
-                $addTags = array_diff($tags, $oldTags, ['']);
-                $deleteTags = array_diff($oldTags, $tags, ['']);
-
-                $properties = ['type'=>'tags', 'owner_id'=>$event->sender->page_id, 'model'=>'Page'];
-
-                if(!empty($addTags)) Index::add(['data'=>$addTags] + $properties);
-
-                if(!empty($deleteTags)){
-                    $delete = [];
-                    foreach($event->sender->indexes as $row){
-                        if(in_array($row->data->value, $deleteTags)) $delete[] = $row->data->value;
-                    }
-                    Index::deleteAll(['data_id'=>$delete] + $properties);
-                }
-            }
-        });
-        parent::init();
-    }
-
     /**
      * @inheritdoc
      */
@@ -67,8 +38,7 @@ class PageData extends \yii\db\ActiveRecord
             [['page_id'], 'required'],
             [['page_id'], 'integer'],
             [['content', 'tags'], 'string'],
-            [['title', 'description', 'keywords'], 'string', 'max' => 255],
-            [['page_id', 'title', 'description', 'keywords', 'content', 'tags'], 'safe'],
+            [['header', 'title', 'description', 'keywords'], 'string', 'max' => 255]
         ];
     }
 
@@ -78,12 +48,13 @@ class PageData extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'page_id' => Yii::t('rere', 'Page ID'),
-            'title' => Yii::t('rere', 'Title'),
-            'description' => Yii::t('rere', 'Description'),
-            'keywords' => Yii::t('rere', 'Keywords'),
-            'content' => Yii::t('rere', 'Content'),
-            'tags' => Yii::t('rere', 'Tags'),
+            'page_id' => Yii::t('ra', 'Page ID'),
+            'title' => Yii::t('ra', 'Header'),
+            'header' => Yii::t('ra', 'Title'),
+            'description' => Yii::t('ra', 'Description'),
+            'keywords' => Yii::t('ra', 'Keywords'),
+            'content' => Yii::t('ra', 'Content'),
+            'tags' => Yii::t('ra', 'Tags'),
         ];
     }
 
@@ -100,7 +71,69 @@ class PageData extends \yii\db\ActiveRecord
      */
     public function getIndexes()
     {
-        return $this->hasMany(Index::className(), ['owner_id' => 'page_id'])->andOnCondition([Index::tableName() . '.model'=>'Page'])->with('data');
+        return $this->hasMany(Index::className(), ['owner_id' => 'page_id'])->andOnCondition(['indexes.model' => 'Page'])->joinWith('data');
+    }
+
+    public function beforeValidate()
+    {
+        if (empty($this->header) && $this->page->name)
+            $this->header = $this->page->name;
+        if (empty($this->title) && $this->page->name)
+            $this->title = $this->page->name;
+        if (empty($this->description) && $this->page->about) {
+            $this->description = preg_replace('#[\r\n\s]+#', ' ', trim($this->page->about));
+            if (mb_strlen($this->description) > 255)
+                $this->description = mb_substr($this->description, 0, mb_strrpos(mb_substr($this->description, 0, 255, 'UTF-8'), ' ', 0, 'UTF-8'), 'UTF-8');
+        }
+
+        if (empty($this->keywords) && $this->tags)
+            $this->keywords = $this->tags;
+
+        return parent::beforeValidate();
+    }
+
+    public function beforeSave($insert)
+    {
+        if ($this->isAttributeChanged('tags')) {
+            $tags = array_map('trim', explode(',', $this->getAttribute('tags')));
+            $oldTags = array_map('trim', explode(',', $this->getOldAttribute('tags')));
+
+            $addTags = array_diff($tags, $oldTags, ['']);
+            $deleteTags = array_diff($oldTags, $tags, ['']);
+
+            $properties = ['type' => 'tags', 'owner_id' => $this->page_id, 'model' => 'Page'];
+
+            $transaction = Yii::$app->db->beginTransaction(Transaction::SERIALIZABLE);
+            try {
+                if (!empty($deleteTags)) {
+                    $delete = [];
+                    foreach ($this->indexes as $row) {
+                        if (in_array($row->data->value, $deleteTags)) $delete[] = $row->data->id;
+                        if (in_array($row->data->value, $addTags)) unset($addTags[array_search($row->data->value, $addTags)]);
+                    }
+                    Index::deleteAll(['data_id' => $delete] + $properties);
+                }
+
+                if (!empty($addTags)) foreach ($addTags as $row) {
+                    $model = new Index();
+                    $model->data = $row;
+                    $model->setAttributes($properties);
+                    $model->save(false);
+                }
+
+                $transaction->commit();
+            } catch (Exception $e) {
+                $transaction->rollBack();
+                $this->addError('tags', Yii::t('ra', 'Can`t save tags!'));
+            }
+        }
+        return parent::beforeSave($insert);
+    }
+
+    public function afterFind()
+    {
+        if (strpos($this->content, '<iframe'))
+            $this->content = preg_replace('%(<iframe.+)(<\\/iframe>|\\/>)%', '<div class="flex-video">$1$2</div>', $this->content);
     }
 
     public function getContent()
@@ -124,10 +157,6 @@ class PageData extends \yii\db\ActiveRecord
                 $content = str_replace($search, $replace, $content);
             }
         }
-
-        if (strpos($content, '<iframe'))
-            $content = preg_replace('%(<iframe.+)(<\\/iframe>|\\/>)%', '<div class="flex-video">$1$2</div>', $content);
-
         return $content;
     }
 }

@@ -1,66 +1,67 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
+use ra\admin\helpers\Text;
+use ra\admin\traits\SerializeAttribute;
+use ra\traits\AutoSet;
 use Yii;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Html;
 
 /**
- * This is the model class for table "{{%character}}".
+ * @inheritdoc
  *
- * @property integer $id
- * @property string $url
- * @property string $type
+ * @property Module $module
+ * @property CharacterReference[] $characterReferences
+ * @property Reference[] $references
+ * @property PageCharacters[] $pageCharacters
  */
-class Character extends \yii\db\ActiveRecord
+class Character extends \ra\models\db\Character
 {
-    /**
-     * @inheritdoc
-     */
-    public static function tableName()
+    use SerializeAttribute, AutoSet;
+    public $serializeAttributes = ['module', 'filter', 'list'];
+
+    public function save($runValidation = true, $attributeNames = null)
     {
-        return '{{%character}}';
+        if (!$this->url && $this->name) $this->url = Text::translate($this->name);
+
+        if (strlen($this->url) > 32) $this->url = substr($this->url, 0, 30);
+
+        if ($this->isNewRecord && ($model = self::findOne(['url' => $this->url, 'module_id' => $this->module_id, 'is_category' => $this->is_category]))) {
+            $this->setAttributes($model->attributes, false);
+            $this->setIsNewRecord(false);
+        }
+        return parent::save($runValidation, $attributeNames);
     }
 
     /**
-     * @inheritdoc
+     * @return \yii\db\ActiveQuery
      */
-    public function rules()
+    public function getModule()
     {
-        return [
-            [['url', 'type'], 'required'],
-            [['url'], 'string', 'max' => 32],
-            [['type'], 'string', 'max' => 16]
-        ];
+        return $this->hasOne(Module::className(), ['id' => 'module_id']);
     }
 
     /**
-     * @inheritdoc
+     * @return \yii\db\ActiveQuery
      */
-    public function attributeLabels()
+    public function getCharacterReferences()
     {
-        return [
-            'id' => Yii::t('rere.model', 'ID'),
-            'url' => Yii::t('rere.model', 'Url'),
-            'type' => Yii::t('rere.model', 'Type'),
-        ];
+        return $this->hasMany(CharacterReference::className(), ['character_id' => 'id']);
     }
 
-
-
-    public static function all()
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getReferences()
     {
-        return self::find()->all();
+        return $this->hasMany(Reference::className(), ['id' => 'reference_id'])->viaTable('{{%character_reference}}', ['character_id' => 'id']);
     }
 
-    public static function typeMap()
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPageCharacters()
     {
-        return ArrayHelper::map(self::all(), 'url', 'type');
-    }
-
-    public function field($value = null, $options = [])
-    {
-        return Html::hiddenInput('PageCharacters[' . $this->id . '][name]', $this->url, $options) . Html::input($this->type, 'PageCharacters[' . $this->id . '][value]', $value, $options);
+        return $this->hasMany(PageCharacters::className(), ['character_id' => 'id']);
     }
 }

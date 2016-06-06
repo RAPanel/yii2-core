@@ -1,6 +1,6 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
 
@@ -38,8 +38,8 @@ class Migration extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'version' => Yii::t('rere.model', 'Version'),
-            'apply_time' => Yii::t('rere.model', 'Apply Time'),
+            'version' => Yii::t('ra', 'Version'),
+            'apply_time' => Yii::t('ra', 'Apply Time'),
         ];
     }
 }

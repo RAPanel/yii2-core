@@ -1,6 +1,6 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
 
@@ -12,8 +12,8 @@ use Yii;
  * @property string $inputType
  * @property string $name
  * @property string $value
- * @property string $update_at
- * @property string $create_at
+ * @property string $updated_at
+ * @property string $created_at
  */
 class Settings extends \yii\db\ActiveRecord
 {
@@ -33,7 +33,7 @@ class Settings extends \yii\db\ActiveRecord
         return [
             [['path', 'name'], 'required'],
             [['value'], 'string'],
-            [['update_at', 'create_at'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
             [['path', 'name'], 'string', 'max' => 64],
             [['inputType'], 'string', 'max' => 8]
         ];
@@ -45,13 +45,13 @@ class Settings extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('rere.model', 'ID'),
-            'path' => Yii::t('rere.model', 'Path'),
-            'inputType' => Yii::t('rere.model', 'Input Type'),
-            'name' => Yii::t('rere.model', 'Name'),
-            'value' => Yii::t('rere.model', 'Value'),
-            'update_at' => Yii::t('rere.model', 'Update At'),
-            'create_at' => Yii::t('rere.model', 'Create At'),
+            'id' => Yii::t('ra', 'ID'),
+            'path' => Yii::t('ra', 'Path'),
+            'inputType' => Yii::t('ra', 'Input Type'),
+            'name' => Yii::t('ra', 'Name'),
+            'value' => Yii::t('ra', 'Value'),
+            'updated_at' => Yii::t('ra', 'Updated At'),
+            'created_at' => Yii::t('ra', 'Created At'),
         ];
     }
 }

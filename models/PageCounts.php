@@ -1,6 +1,6 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
 
@@ -39,10 +39,10 @@ class PageCounts extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'page_id' => Yii::t('rere.model', 'Page ID'),
-            'views' => Yii::t('rere.model', 'Views'),
-            'likes' => Yii::t('rere.model', 'Likes'),
-            'comments' => Yii::t('rere.model', 'Comments'),
+            'page_id' => Yii::t('ra', 'Page ID'),
+            'views' => Yii::t('ra', 'Views'),
+            'likes' => Yii::t('ra', 'Likes'),
+            'comments' => Yii::t('ra', 'Comments'),
         ];
     }
 }

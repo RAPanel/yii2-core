@@ -2,23 +2,22 @@
 /**
  * Created by PhpStorm.
  * User: semyonchick
- * Date: 28.05.2015
- * Time: 16:31
+ * Date: 22.10.2015
+ * Time: 0:06
  */
 
-namespace rere\core\controllers;
+namespace ra\controllers;
 
 
-use rere\core\models\Page;
 use Yii;
-use yii\web\HttpException;
 
 class Controller extends \yii\web\Controller
 {
+    public $includePjaxLayout = false;
+
     public function render($view, $params = [])
     {
-        $render = Yii::$app->request->isAjax ? 'renderAjax' : 'render';
-        return parent::$render($view, $params);
+        $type = (Yii::$app->request->isAjax || Yii::$app->request->get('ajax')) && (!$this->includePjaxLayout || !Yii::$app->request->isPjax) ? 'renderAjax' : 'render';
+        return parent::$type($view, $params);
     }
-
 }

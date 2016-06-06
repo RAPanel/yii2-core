@@ -1,6 +1,6 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
 
@@ -44,11 +44,11 @@ class PageSessionData extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'page_id' => Yii::t('rere.model', 'Page ID'),
-            'session' => Yii::t('rere.model', 'Session'),
-            'type' => Yii::t('rere.model', 'Type'),
-            'value' => Yii::t('rere.model', 'Value'),
-            'last_visit' => Yii::t('rere.model', 'Last Visit'),
+            'page_id' => Yii::t('ra', 'Page ID'),
+            'session' => Yii::t('ra', 'Session'),
+            'type' => Yii::t('ra', 'Type'),
+            'value' => Yii::t('ra', 'Value'),
+            'last_visit' => Yii::t('ra', 'Last Visit'),
         ];
     }
 }

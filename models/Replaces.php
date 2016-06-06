@@ -1,6 +1,6 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
 
@@ -9,8 +9,8 @@ use Yii;
  *
  * @property string $name
  * @property string $value
- * @property string $update_at
- * @property string $create_at
+ * @property string $updated_at
+ * @property string $created_at
  */
 class Replaces extends \yii\db\ActiveRecord
 {
@@ -30,7 +30,7 @@ class Replaces extends \yii\db\ActiveRecord
         return [
             [['name', 'value'], 'required'],
             [['value'], 'string'],
-            [['update_at', 'create_at'], 'safe'],
+            [['updated_at', 'created_at'], 'safe'],
             [['name'], 'string', 'max' => 32]
         ];
     }
@@ -41,10 +41,10 @@ class Replaces extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'name' => Yii::t('rere.model', 'Name'),
-            'value' => Yii::t('rere.model', 'Value'),
-            'update_at' => Yii::t('rere.model', 'Update At'),
-            'create_at' => Yii::t('rere.model', 'Create At'),
+            'name' => Yii::t('ra', 'Name'),
+            'value' => Yii::t('ra', 'Value'),
+            'updated_at' => Yii::t('ra', 'Updated At'),
+            'created_at' => Yii::t('ra', 'Created At'),
         ];
     }
 }

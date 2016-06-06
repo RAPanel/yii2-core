@@ -1,15 +1,14 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
 use Yii;
-use yii\web\HttpException;
 
 /**
  * This is the model class for table "{{%index}}".
  *
- * @property string $extend_id
- * @property string $base
+ * @property string $owner_id
+ * @property string $model
  * @property string $type
  * @property string $data_id
  *
@@ -33,8 +32,7 @@ class Index extends \yii\db\ActiveRecord
         return [
             [['owner_id', 'model', 'type', 'data_id'], 'required'],
             [['owner_id', 'data_id'], 'integer'],
-            [['model', 'type'], 'string', 'max' => 16],
-            [['data'], 'string', 'max' => 64],
+            [['model', 'type'], 'string', 'max' => 16]
         ];
     }
 
@@ -44,10 +42,10 @@ class Index extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'extend_id' => Yii::t('rere.model', 'Extend ID'),
-            'base' => Yii::t('rere.model', 'Base'),
-            'type' => Yii::t('rere.model', 'Type'),
-            'data_id' => Yii::t('rere.model', 'Data ID'),
+            'owner_id' => Yii::t('ra', 'Owner ID'),
+            'model' => Yii::t('ra', 'Model'),
+            'type' => Yii::t('ra', 'Type'),
+            'data_id' => Yii::t('ra', 'Data ID'),
         ];
     }
 
@@ -61,24 +59,13 @@ class Index extends \yii\db\ActiveRecord
 
     public function setData($value)
     {
-        $model = IndexData::findOne(['value'=>$value]);
-        if(!$model){
+        if (!$value = trim($value)) return;
+        $this->data_id = IndexData::find()->select('id')->where(['value' => $value])->scalar();
+        if (!$this->data_id) {
             $model = new IndexData();
             $model->value = $value;
-            if(!$model->save())
-                throw new HttpException(400, $model->errors);
-        }
-        $this->data_id = $model->id;
-    }
-
-    public static function add($data)
-    {
-        $list = (array)$data['data'];
-        foreach($list as $row){
-            $data['data'] = $row;
-            $model = new Index();
-            $model->setAttributes($data);
             $model->save(false);
+            $this->data_id = $model->id;
         }
     }
 }

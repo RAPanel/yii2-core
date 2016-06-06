@@ -1,7 +1,8 @@
 <?php
 
-namespace rere\core\models;
+namespace ra\models;
 
+use ra\admin\helpers\RA;
 use Yii;
 
 /**
@@ -13,8 +14,7 @@ use Yii;
  * @property string $value
  *
  * @property Page $page
- * @property PageCharacters $character
- * @property PageCharacters[] $pageCharacters
+ * @property Character $character
  */
 class PageCharacters extends \yii\db\ActiveRecord
 {
@@ -34,7 +34,7 @@ class PageCharacters extends \yii\db\ActiveRecord
         return [
             [['page_id', 'character_id'], 'required'],
             [['page_id', 'character_id'], 'integer'],
-            [['value'], 'string'],
+            [['value'], 'safe'],
             [['page_id', 'character_id'], 'unique', 'targetAttribute' => ['page_id', 'character_id'], 'message' => 'The combination of Page ID and Character ID has already been taken.']
         ];
     }
@@ -45,10 +45,10 @@ class PageCharacters extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('rere.model', 'ID'),
-            'page_id' => Yii::t('rere.model', 'Page ID'),
-            'character_id' => Yii::t('rere.model', 'Character ID'),
-            'value' => Yii::t('rere.model', 'Value'),
+            'id' => Yii::t('ra', 'ID'),
+            'page_id' => Yii::t('ra', 'Page ID'),
+            'character_id' => Yii::t('ra', 'Character ID'),
+            'value' => Yii::t('ra', 'Value'),
         ];
     }
 
@@ -71,13 +71,40 @@ class PageCharacters extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getPageCharacters()
+    public function getReference()
     {
-        return $this->hasMany(Character::className(), ['character_id' => 'id']);
+        return $this->hasOne(Reference::className(), ['id' => 'value']);
     }
 
-    public function getName()
+    public function save($runValidation = true, $attributeNames = null)
     {
-        return Yii::t('ra.character', $this->character->url);
+        $multi = RA::character($this->character_id, 'multi');
+        if (RA::character($this->character_id, 'type') == 'table' && is_array($this->value)) {
+            $list = [];
+            foreach ($this->value as $row) $list[] = implode('|-|', $row);
+            if (!$multi) $this->value = current($list);
+            else $this->value = $list;
+        }
+
+        if ($multi && is_array($this->value)) $this->value = '|' . implode('|+|', $this->value) . '|';
+        
+        return parent::save($runValidation, $attributeNames);
+    }
+
+    public function afterFind()
+    {
+        if (RA::character($this->character_id, 'multi'))
+            if (preg_match('#^\|(.*)\|$#', $this->value, $match)) {
+                $this->value = explode('|+|', $match[1]);
+            } else {
+                $this->value = $this->value ? explode(strpos($this->value, ';;') ? ';;' : ',', $this->value) : [];
+            }
+        if (RA::character($this->character_id, 'type') == 'table') {
+            $list = [];
+            foreach ((array)$this->value as $row) $list[] = explode(strpos($row, '|-|')!==false ? '|-|' : ';;', $row);
+            $this->value = $list;
+        }
+
+        parent::afterFind();
     }
 }
